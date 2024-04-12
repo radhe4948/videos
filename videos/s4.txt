@@ -1,0 +1,170 @@
+Slip 4
+Q.1 
+#include <stdio.h>
+#define MAX_PROCESS 5
+#define MAX_RESOURCES 3
+int allocation[MAX_PROCESS][MAX_RESOURCES];
+int max[MAX_PROCESS][MAX_RESOURCES];
+int need[MAX_PROCESS][MAX_RESOURCES];
+int available[MAX_RESOURCES] = {7, 2, 6};
+void acceptAllocation() {
+ printf("Enter Allocation Matrix:\n");
+ for (int i = 0; i < MAX_PROCESS; i++) {
+ printf("P%d: ", i);
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ scanf("%d", &allocation[i][j]);
+ }
+ }
+}
+void acceptMax() {
+ printf("Enter Max Matrix:\n");
+ for (int i = 0; i < MAX_PROCESS; i++) {
+ printf("P%d: ", i);
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ scanf("%d", &max[i][j]);
+ need[i][j] = max[i][j] - allocation[i][j];
+ }
+ }
+}
+void displayAllocationMax() {
+ printf("\nAllocation Matrix:\n");
+ for (int i = 0; i < MAX_PROCESS; i++) {
+ printf("P%d: ", i);
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ printf("%d ", allocation[i][j]);
+ }
+ printf("\n");
+ }
+ printf("\nMax Matrix:\n");
+ for (int i = 0; i < MAX_PROCESS; i++) {
+ printf("P%d: ", i);
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ printf("%d ", max[i][j]);
+ }
+ printf("\n");
+ }
+}
+void displayNeed() {
+ printf("\nNeed Matrix:\n");
+ for (int i = 0; i < MAX_PROCESS; i++) {
+ printf("P%d: ", i);
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ printf("%d ", need[i][j]);
+ }
+ printf("\n");
+ }
+}
+void displayAvailable() {
+ printf("\nAvailable Resources: ");
+ for (int i = 0; i < MAX_RESOURCES; i++) {
+ printf("%d ", available[i]);
+ }
+ printf("\n");
+}
+int main() {
+ int choice;
+ do {
+ printf("\nMenu:\n");
+ printf("1. Accept Allocation\n");
+ printf("2. Accept Max\n");
+ printf("3. Display Allocation, Max\n");
+ printf("4. Find and Display Need\n");
+ printf("5. Display Available Resources\n");
+ printf("6. Exit\n");
+ printf("Enter your choice: ");
+ scanf("%d", &choice);
+ switch (choice) {
+ case 1:
+ acceptAllocation();
+ break;
+ case 2:
+ acceptMax();
+ break;
+ case 3:
+ displayAllocationMax();
+ break;
+ case 4:
+ displayNeed();
+ break;
+ case 5:
+ displayAvailable();
+ break;
+ case 6:
+ printf("Exiting...\n");
+ break;
+ default:
+ printf("Invalid choice! Please enter a number between 1 to 6.\n");
+ }
+ } while (choice != 6);
+ return 0;
+}
+Q.2 
+#include <stdio.h>
+#include <stdlib.h>
+void sort(int *request_string, int n) {
+ for (int i = 0; i < n-1; i++) {
+ for (int j = 0; j < n-i-1; j++) {
+ if (request_string[j] > request_string[j+1]) {
+ int temp = request_string[j];
+ request_string[j] = request_string[j+1];
+ request_string[j+1] = temp;
+ }
+ }
+ }
+}
+int main() {
+ int total_blocks, *request_string, head_position, total_head_movements = 0;
+ char direction;
+ printf("Enter total number of disk blocks: ");
+ scanf("%d", &total_blocks);
+ request_string = (int *)malloc(total_blocks * sizeof(int));
+ printf("Enter disk request string:\n");
+ for (int i = 0; i < total_blocks; i++) {
+ scanf("%d", &request_string[i]);
+ }
+ printf("Enter starting head position: ");
+ scanf("%d", &head_position);
+ printf("Enter direction (L for left, R for right): ");
+ scanf(" %c", &direction);
+ sort(request_string, total_blocks);
+ request_string[total_blocks] = head_position;
+ total_blocks++;
+ if (direction == 'L') { 
+ for (int i = 0; i < total_blocks; i++) {
+ if (request_string[i] >= head_position) {
+ total_head_movements += abs(head_position - request_string[i]);
+ head_position = request_string[i];
+ }
+ }
+ for (int i = total_blocks - 1; i >= 0; i--) {
+ if (request_string[i] < head_position) {
+ total_head_movements += abs(head_position - request_string[i]);
+ head_position = request_string[i];
+ }
+ }
+ } else if (direction == 'R') { 
+ for (int i = total_blocks - 1; i >= 0; i--) {
+ if (request_string[i] <= head_position) {
+ total_head_movements += abs(head_position - request_string[i]);
+ head_position = request_string[i];
+ }
+ }
+ for (int i = 0; i < total_blocks; i++) {
+ if (request_string[i] > head_position) {
+ total_head_movements += abs(head_position - request_string[i]);
+ head_position = request_string[i];
+ }
+ }
+ } else {
+printf("Invalid direction! Please enter L for left or R for right.\n");
+ return 1;
+ }
+ printf("\nList of requests served:\n");
+ for (int i = 0; i < total_blocks - 1; i++) {
+ printf("%d -> ", request_string[i]);
+ }
+ printf("%d\n", request_string[total_blocks - 1]);
+ printf("Total number of head movements: %d\n", total_head_movements);
+ free(request_string);
+ return 0;
+}

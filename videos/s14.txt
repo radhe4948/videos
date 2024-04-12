@@ -1,0 +1,135 @@
+Slip 14
+Q.1 
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#define MAX_BLOCKS 100
+int disk[MAX_BLOCKS];
+int allocated_blocks = 0;
+void initializeDisk(int n) {
+ for (int i = 0; i < n; i++) {
+ disk[i] = 0; 
+ }
+}
+void showBitVector(int n) {
+ printf("Bit Vector:\n");
+ for (int i = 0; i < n; i++) {
+ printf("%d ", disk[i]);
+ }
+ printf("\n");
+}
+void showDirectory(int n) {
+ printf("Directory:\n");
+ for (int i = 0; i < n; i++) {
+ if (disk[i] == 1) {
+ printf("Block %d: Allocated\n", i);
+ } else {
+ printf("Block %d: Free\n", i);
+ }
+ }
+}
+void allocateBlocks(int n) {
+ int num_allocated = rand() % n + 1; 
+ for (int i = 0; i < num_allocated; i++) {
+ int block = rand() % n; // Random block index
+ if (disk[block] == 0) {
+ allocated_blocks++;
+ }
+ }
+ printf("Allocated %d blocks randomly.\n", num_allocated);
+}
+void deleteFile(int n) {
+ if (allocated_blocks == 0) {
+ printf("No files to delete.\n");
+ return;
+ }
+ int blocks_to_delete = rand() % allocated_blocks + 1; 
+blocks to delete (1 to allocated_blocks)
+ int deleted_count = 0;
+ for (int i = 0; i < n && deleted_count < blocks_to_delete; i++) {
+ if (disk[i] == 1) {
+ disk[i] = 0; 
+ deleted_count++;
+ allocated_blocks--;
+ }
+ }
+ printf("Deleted %d blocks.\n", deleted_count);
+}
+int main() {
+ srand(time(NULL));
+ int n;
+ printf("Enter the number of blocks on the disk: ");
+ scanf("%d", &n);
+ initializeDisk(n);
+ char choice;
+ do {
+ printf("\nMenu:\n");
+ printf("a) Show Bit Vector\n");
+ printf("b) Show Directory\n");
+ printf("c) Delete File\n");
+ printf("d) Exit\n");
+ printf("Enter your choice: ");
+ scanf(" %c", &choice);
+ switch(choice) {
+ case 'a':
+ showBitVector(n);
+ break;
+ case 'b':
+ showDirectory(n);
+ break;
+ case 'c':
+ deleteFile(n);
+ break;
+ case 'd':
+ printf("Exiting...\n");
+ break;
+ default:
+ printf("Invalid choice! Please enter a valid option.\n");
+ }
+ } while(choice != 'd');
+ return 0;
+}
+Q.2
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+void swap(int *a, int *b) {
+ int temp = *a;
+ *a = *b;
+ *b = temp;
+}
+void sort(int *request_string, int n, int current_position) {
+ for (int i = 0; i < n - 1; i++) {
+ for (int j = 0; j < n - i - 1; j++) {
+ if (abs(request_string[j] - current_position) > abs(request_string[j + 
+1] - current_position)) {
+ swap(&request_string[j], &request_string[j + 1]);
+ }
+ }
+ }
+}
+void sstf(int *request_string, int n, int start_position) {
+ int total_head_movements = 0;
+ int current_position = start_position;
+ printf("Order of service: ");
+ for (int i = 0; i < n; i++) {
+ total_head_movements += abs(request_string[i] - current_position);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ printf("\nTotal number of head movements: %d\n", total_head_movements);
+}
+int main() {
+ int request_string[] = {55, 58, 39, 18, 90, 160, 150, 38, 184};
+ int n = sizeof(request_string) / sizeof(request_string[0]);
+ int start_position = 50;
+ printf("Disk Request String: ");
+ for (int i = 0; i < n; i++) {
+ printf("%d ", request_string[i]);
+ }
+ printf("\nStarting Head Position: %d\n", start_position);
+ sort(request_string, n, start_position);
+ printf("\nOrder of service:\n");
+ sstf(request_string, n, start_position);
+ return 0;
+}

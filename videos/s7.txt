@@ -1,0 +1,129 @@
+Slip 7
+Q.1 
+#include <stdio.h>
+#include <stdbool.h>
+#define MAX_PROCESSES 5
+#define MAX_RESOURCES 4
+int allocation[MAX_PROCESSES][MAX_RESOURCES] = {
+ {2, 0, 0, 1},
+ {3, 1, 2, 1},
+ {2, 1, 0, 3},
+ {1, 3, 1, 2},
+ {1, 4, 3, 2}
+};
+int max[MAX_PROCESSES][MAX_RESOURCES] = {
+ {4, 2, 1, 2},
+ {5, 2, 5, 2},
+ {2, 3, 1, 6},
+ {1, 4, 2, 4},
+ {3, 6, 6, 5}
+};
+int available[MAX_RESOURCES] = {3, 3, 2, 2};
+bool finish[MAX_PROCESSES] = {false};
+bool isSafeState() {
+ int work[MAX_RESOURCES];
+ bool tempFinish[MAX_PROCESSES];
+ 
+ for (int i = 0; i < MAX_RESOURCES; i++) {
+ work[i] = available[i];
+ }
+ for (int i = 0; i < MAX_PROCESSES; i++) {
+ tempFinish[i] = finish[i];
+ }
+ bool found;
+ do {
+ found = false;
+ for (int i = 0; i < MAX_PROCESSES; i++) {
+ if (!tempFinish[i]) {
+ bool canAllocate = true;
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ if (max[i][j] - allocation[i][j] > work[j]) {
+ canAllocate = false;
+ break;
+ }
+ }
+ if (canAllocate) {
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ work[j] += allocation[i][j];
+ }
+ tempFinish[i] = true;
+ found = true;
+ }
+ }
+ }
+ } while (found);
+ for (int i = 0; i < MAX_PROCESSES; i++) {
+ if (!tempFinish[i]) {
+ return false;
+ }
+ }
+ return true;
+}
+int main() {
+ if (isSafeState()) {
+ printf("The current system is in a safe state.\n");
+ } else {
+ printf("The current system is not in a safe state.\n");
+ }
+ return 0;
+}
+Q.2 
+#include <stdio.h>
+#include <stdlib.h>
+void sort(int *request_string, int n) {
+ for (int i = 0; i < n-1; i++) {
+ for (int j = 0; j < n-i-1; j++) {
+ if (request_string[j] > request_string[j+1]) {
+ int temp = request_string[j];
+ request_string[j] = request_string[j+1];
+ request_string[j+1] = temp;
+ }
+ }
+ }
+}
+void scan(int *request_string, int n, int start_position, char direction) {
+ int total_head_movements = 0;
+ sort(request_string, n);
+ int end_position = 199; 
+ int current_position = start_position;
+ if (direction == 'R') {
+ for (int i = 0; i < n; i++) {
+ if (request_string[i] >= current_position && request_string[i] <= 
+end_position) {
+ total_head_movements += abs(request_string[i] - current_position);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ }
+ total_head_movements += abs(end_position - current_position);
+ printf("%d -> ", end_position);
+ } else if (direction == 'L') {
+ for (int i = n - 1; i >= 0; i--) {
+ if (request_string[i] <= current_position && request_string[i] >= 0) {
+ total_head_movements += abs(request_string[i] - current_position);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ }
+ total_head_movements += abs(current_position); 
+from 0 to current position
+ printf("0 -> ");
+ current_position = 0;
+ }
+ printf("\nTotal number of head movements: %d\n", total_head_movements);
+}
+int main() {
+ int request_string[] = {82, 170, 43, 140, 24, 16, 190};
+ int n = sizeof(request_string) / sizeof(request_string[0]);
+ int start_position = 50;
+ char direction = 'R'; // Right direction
+ printf("Disk Request String: ");
+ for (int i = 0; i < n; i++) {
+ printf("%d ", request_string[i]);
+ }
+ printf("\nStarting Head Position: %d\n", start_position);
+ printf("Direction: %c\n", direction);
+ printf("\nOrder of service:\n");
+ scan(request_string, n, start_position, direction);
+ return 0;
+}

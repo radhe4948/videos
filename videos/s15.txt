@@ -1,0 +1,152 @@
+Slip 15
+Q.1 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
+#define MAX_BLOCKS 100
+typedef struct Node {
+ int block_number;
+ struct Node *next;
+} Node;
+Node *disk[MAX_BLOCKS] = {NULL};
+bool allocated_blocks[MAX_BLOCKS] = {false};
+void showBitVector(int n) {
+ printf("Bit Vector:\n");
+ for (int i = 0; i < n; i++) {
+ printf("%d ", allocated_blocks[i]);
+ }
+ printf("\n");
+}
+void showDirectory(int n) {
+ printf("Directory:\n");
+ for (int i = 0; i < n; i++) {
+ if (allocated_blocks[i]) {
+ printf("Block %d: Allocated\n", i);
+ } else {
+ printf("Block %d: Free\n", i);
+ }
+ }
+}
+void createNewFile(int n) {
+ int starting_block = rand() % n;
+ while (allocated_blocks[starting_block]) {
+ starting_block = (starting_block + 1) % n; 
+ }
+ Node *file = (Node *)malloc(sizeof(Node));
+ file->block_number = starting_block;
+ file->next = NULL;
+ disk[starting_block] = file;
+ allocated_blocks[starting_block] = true;
+ printf("New file created starting from block %d.\n", starting_block);
+}
+int main() {
+ srand(time(NULL));
+ int n;
+ printf("Enter the number of blocks on the disk: ");
+ scanf("%d", &n);
+ char choice;
+ do {
+ printf("\nMenu:\n");
+ printf("a) Show Bit Vector\n");
+ printf("b) Create New File\n");
+ printf("c) Show Directory\n");
+ printf("d) Exit\n");
+ printf("Enter your choice: ");
+ scanf(" %c", &choice);
+ switch (choice) {
+ case 'a':
+ showBitVector(n);
+ break;
+ case 'b':
+ createNewFile(n);
+ break;
+ case 'c':
+ showDirectory(n);
+ break;
+ case 'd':
+ printf("Exiting...\n");
+ break;
+ default:
+ printf("Invalid choice! Please enter a valid option.\n");
+ }
+ } while (choice != 'd');
+ return 0;
+}
+Q.2
+#include <stdio.h>
+#include <stdlib.h>
+void swap(int *a, int *b) {
+ int temp = *a;
+ *a = *b;
+ *b = temp;
+}
+void sort(int *request_string, int n) {
+ for (int i = 0; i < n - 1; i++) {
+ for (int j = 0; j < n - i - 1; j++) {
+ if (request_string[j] > request_string[j + 1]) {
+ swap(&request_string[j], &request_string[j + 1]);
+ }
+ }
+ }
+}
+void cscan(int *request_string, int n, int start_position, char direction) {
+ int total_head_movements = 0;
+ sort(request_string, n);
+ int current_position = start_position;
+ if (direction == 'R') {
+ for (int i = 0; i < n; i++) {
+ if (request_string[i] >= current_position) {
+ total_head_movements += abs(request_string[i] - current_position);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ }
+ total_head_movements += abs(current_position - 0);
+ printf("0 -> ");
+ current_position = 0;
+ for (int i = 0; i < n; i++) {
+ if (request_string[i] >= current_position) {
+ total_head_movements += abs(request_string[i] - current_position);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ }
+ }
+ else if (direction == 'L') {
+ for (int i = n - 1; i >= 0; i--) {
+ if (request_string[i] <= current_position) {
+ total_head_movements += abs(request_string[i] - current_position);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ }
+ total_head_movements += abs(current_position - 199); 
+cylinder is 199
+ printf("199 -> ");
+ current_position = 199;
+ for (int i = n - 1; i >= 0; i--) {
+ if (request_string[i] <= current_position) {
+ total_head_movements += abs(request_string[i] - current_position);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ }
+ }
+ printf("\nTotal number of head movements: %d\n", total_head_movements);
+}
+int main() {
+ int request_string[] = {80, 150, 60, 135, 40, 35, 170};
+ int n = sizeof(request_string) / sizeof(request_string[0]);
+ int start_position = 70;
+ char direction = 'R';
+ printf("Disk Request String: ");
+ for (int i = 0; i < n; i++) {
+ printf("%d ", request_string[i]);
+ }
+ printf("\nStarting Head Position: %d\n", start_position);
+ printf("Direction: %c\n", direction);
+ printf("\nOrder of service:\n");
+ cscan(request_string, n, start_position, direction);
+ return 0;
+}

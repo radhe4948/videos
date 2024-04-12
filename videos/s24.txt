@@ -1,0 +1,120 @@
+Slip 24
+Q.1 
+#include <stdio.h>
+#include <stdlib.h>
+#include <mpi.h>
+#define ARRAY_SIZE 1000
+int main(int argc, char **argv) {
+ int rank, size;
+ int local_sum = 0;
+ int total_sum = 0;
+ MPI_Init(&argc, &argv);
+ MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+ MPI_Comm_size(MPI_COMM_WORLD, &size);
+ srand(time(NULL) + rank);
+ for (int i = 0; i < ARRAY_SIZE; i++) {
+ int num = rand() % 1000;
+ if (num % 2 != 0) {
+ local_sum += num;
+ }
+ }
+ MPI_Reduce(&local_sum, &total_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+ if (rank == 0) {
+ printf("Total sum of odd numbers: %d\n", total_sum);
+ }
+ MPI_Finalize();
+ return 0;
+}
+Q.2:
+#include <stdio.h>
+#include <stdbool.h>
+#define MAX_PROCESSES 5
+#define MAX_RESOURCES 3
+void calculateNeedMatrix(int need[MAX_PROCESSES][MAX_RESOURCES], int 
+allocation[MAX_PROCESSES][MAX_RESOURCES],
+ int max[MAX_PROCESSES][MAX_RESOURCES], int m, int n) {
+ for (int i = 0; i < m; i++) {
+ for (int j = 0; j < n; j++) {
+ need[i][j] = max[i][j] - allocation[i][j];
+ }
+ }
+}
+bool isSafe(int processes[MAX_PROCESSES], int available[MAX_RESOURCES], int 
+allocation[MAX_PROCESSES][MAX_RESOURCES],
+ int need[MAX_PROCESSES][MAX_RESOURCES], int m, int n) {
+ bool finish[MAX_PROCESSES] = { false };
+ int work[MAX_RESOURCES];
+ for (int i = 0; i < n; i++) {
+ work[i] = available[i];
+ }
+ int count = 0;
+ while (count < m) {
+ bool found = false;
+ for (int i = 0; i < m; i++) {
+ if (!finish[i]) {
+ bool canExecute = true;
+ for (int j = 0; j < n; j++) {
+ if (need[i][j] > work[j]) {
+ canExecute = false;
+ break;
+ }
+ }
+ if (canExecute) {
+ for (int j = 0; j < n; j++) {
+ work[j] += allocation[i][j];
+ }
+ finish[i] = true;
+ processes[count++] = i;
+ found = true;
+ }
+ }
+ }
+ if (!found) {
+ return false;
+ }
+ }
+ return true;
+}
+int main() {
+ int allocation[MAX_PROCESSES][MAX_RESOURCES] = {
+ {0, 1, 0},
+ {2, 0, 0},
+ {3, 0, 3},
+ {2, 1, 1},
+ {0, 0, 2}
+ };
+ int max[MAX_PROCESSES][MAX_RESOURCES] = {
+ {0, 0, 0},
+ {2, 0, 2},
+ {3, 0, 3},
+ {2, 1, 1},
+ {0, 0, 2}
+ };
+ int available[MAX_RESOURCES] = {0, 0, 0};
+ int need[MAX_PROCESSES][MAX_RESOURCES];
+ int processes[MAX_PROCESSES];
+ printf("Enter available instances of each resource type: ");
+ for (int i = 0; i < MAX_RESOURCES; i++) {
+ scanf("%d", &available[i]);
+ }
+ calculateNeedMatrix(need, allocation, max, MAX_PROCESSES, MAX_RESOURCES);
+ printf("Need Matrix:\n");
+ for (int i = 0; i < MAX_PROCESSES; i++) {
+ printf("Process %d: ", i);
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ printf("%d ", need[i][j]);
+ }
+ printf("\n");
+ }
+ if (isSafe(processes, available, allocation, need, MAX_PROCESSES, 
+MAX_RESOURCES)) {
+ printf("System is in a safe state.\nSafe sequence: ");
+ for (int i = 0; i < MAX_PROCESSES; i++) {
+ printf("P%d ", processes[i]);
+ }
+ printf("\n");
+ } else {
+ printf("System is in an unsafe state.\n");
+ }
+ return 0;
+}

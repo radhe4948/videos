@@ -1,0 +1,113 @@
+S1
+Q1
+#include <stdio.h>
+#define MAX_PROCESS 5
+#define MAX_RESOURCES 3
+int allocation[MAX_PROCESS][MAX_RESOURCES];
+int max[MAX_PROCESS][MAX_RESOURCES];
+int need[MAX_PROCESS][MAX_RESOURCES];
+int available[MAX_RESOURCES];
+void displayAllocationMaxAvailable() {
+ printf("\nProcess Allocation Max Available\n");
+ printf("A B C A B C A B C\n");
+ for (int i = 0; i < MAX_PROCESS; i++) {
+ printf("P%d ", i);
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ printf("%d ", allocation[i][j]);
+ }
+ printf(" ");
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ printf("%d ", max[i][j]);
+ }
+ printf(" ");
+ if (i == 0) {
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ printf("%d ", available[j]);
+ }
+ }
+ printf("\n");
+ }
+}
+void displayNeed() {
+ printf("\nNeed Matrix:\n");
+ for (int i = 0; i < MAX_PROCESS; i++) {
+ printf("P%d: ", i);
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ printf("%d ", need[i][j]);
+ }
+ printf("\n");
+ }
+}
+int main() {
+ printf("Enter available resources (A B C): ");
+ scanf("%d %d %d", &available[0], &available[1], &available[2]);
+ printf("Enter allocation matrix:\n");
+ for (int i = 0; i < MAX_PROCESS; i++) {
+ printf("P%d: ", i);
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ scanf("%d", &allocation[i][j]);
+ }
+ }
+ printf("Enter max matrix:\n");
+ for (int i = 0; i < MAX_PROCESS; i++) {
+ printf("P%d: ", i);
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ scanf("%d", &max[i][j]);
+ need[i][j] = max[i][j] - allocation[i][j];
+ }
+ }
+ int choice;
+ do {
+ printf("\nMenu:\n");
+ printf("1. Display Allocation, Max, Available\n");
+ printf("2. Display Need Matrix\n");
+ printf("3. Display Available Resources\n");
+ printf("4. Exit\n");
+ printf("Enter your choice: ");
+ scanf("%d", &choice);
+ switch (choice) {
+ case 1:
+ displayAllocationMaxAvailable();
+ break;
+ case 2:
+ displayNeed();
+ break;
+ case 3:
+ printf("\nAvailable Resources: %d %d %d\n", available[0], 
+available[1], available[2]);
+ break;
+ case 4:
+ printf("Exiting...\n");
+ break;
+ default:
+ printf("Invalid choice! Please enter a number between 1 to 4.\n");
+ }
+ } while (choice != 4);
+ return 0;
+}
+
+Q.2
+#include <stdio.h>
+#include <stdlib.h>
+int main() {
+ int total_blocks, *request_string, head_position, total_head_movements = 0;
+ printf("Enter total number of disk blocks: ");
+ scanf("%d", &total_blocks);
+ request_string = (int *)malloc(total_blocks * sizeof(int));
+ printf("Enter disk request string:\n");
+ for (int i = 0; i < total_blocks; i++) {
+ scanf("%d", &request_string[i]);
+ }
+ printf("Enter current head position: ");
+ scanf("%d", &head_position);
+ printf("\nOrder of serving requests:\n");
+ for (int i = 0; i < total_blocks; i++) {
+ printf("%d ", request_string[i]);
+ total_head_movements += abs(head_position - request_string[i]);
+ head_position = request_string[i];
+ }
+
+ printf("\nTotal number of head movements: %d\n", total_head_movements);
+ free(request_string);
+ return 0;
+}

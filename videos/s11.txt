@@ -1,0 +1,132 @@
+Slip 11
+Q.1
+#include <stdio.h>
+#define MAX_PROCESSES 5
+#define MAX_RESOURCES 3
+int allocation[MAX_PROCESSES][MAX_RESOURCES] = {
+ {0, 1, 0},
+ {2, 0, 0},
+ {3, 0, 3},
+ {2, 1, 1},
+ {0, 0, 2}
+};
+int max[MAX_PROCESSES][MAX_RESOURCES] = {
+ {0, 0, 0},
+ {2, 0, 2},
+ {0, 0, 0},
+ {1, 0, 0},
+ {0, 0, 2}
+};
+int available[MAX_RESOURCES] = {0, 0, 0};
+int need[MAX_PROCESSES][MAX_RESOURCES];
+void calculateNeedMatrix() {
+ for (int i = 0; i < MAX_PROCESSES; i++) {
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ need[i][j] = max[i][j] - allocation[i][j];
+ }
+ }
+}
+void acceptAvailable() {
+ printf("Enter the available resources for A, B, and C: ");
+ scanf("%d %d %d", &available[0], &available[1], &available[2]);
+}
+void displayAllocationMax() {
+ printf("\nAllocation Matrix:\n");
+ printf(" A B C\n");
+ for (int i = 0; i < MAX_PROCESSES; i++) {
+ printf("P%d ", i);
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ printf("%2d ", allocation[i][j]);
+ }
+ printf("\n");
+ }
+ printf("\nMaximum Matrix:\n");
+ printf(" A B C\n");
+ for (int i = 0; i < MAX_PROCESSES; i++) {
+ printf("P%d ", i);
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ printf("%2d ", max[i][j]);
+ }
+ printf("\n");
+ }
+}
+void displayNeedMatrix() {
+ printf("\nNeed Matrix:\n");
+ printf(" A B C\n");
+ for (int i = 0; i < MAX_PROCESSES; i++) {
+ printf("P%d ", i);
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ printf("%2d ", need[i][j]);
+ }
+ printf("\n");
+ }
+}
+void displayAvailable() {
+ printf("\nAvailable Resources:\n");
+ printf("A: %d\n", available[0]);
+ printf("B: %d\n", available[1]);
+ printf("C: %d\n", available[2]);
+}
+int main() {
+ calculateNeedMatrix();
+ char choice;
+ do {
+ printf("\nMenu:\n");
+ printf("a) Accept Available\n");
+ printf("b) Display Allocation, Max\n");
+ printf("c) Display the contents of need matrix\n");
+ printf("d) Display Available\n");
+ printf("e) Exit\n");
+ printf("Enter your choice: ");
+ scanf(" %c", &choice);
+ switch(choice) {
+ case 'a':
+ acceptAvailable();
+ break;
+ case 'b':
+ displayAllocationMax();
+ break;
+ case 'c':
+ displayNeedMatrix();
+ break;
+ case 'd':
+ displayAvailable();
+ break;
+ case 'e':
+ printf("Exiting...\n");
+ break;
+ default:
+ printf("Invalid choice! Please enter a valid option.\n");
+ }
+ } while(choice != 'e');
+ return 0;
+}
+Q.2 
+#include <stdio.h>
+#include <stdlib.h>
+#include <mpi.h>
+#define ARRAY_SIZE 1000
+int main(int argc, char *argv[]) {
+ int rank, size;
+ int array[ARRAY_SIZE];
+ int local_min, global_min;
+ MPI_Init(&argc, &argv);
+ MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+ MPI_Comm_size(MPI_COMM_WORLD, &size);
+ srand(time(NULL) + rank); 
+ for (int i = 0; i < ARRAY_SIZE; i++) {
+ array[i] = rand() % 1000; 
+ }
+ local_min = array[0];
+ for (int i = 1; i < ARRAY_SIZE; i++) {
+ if (array[i] < local_min) {
+ local_min = array[i];
+ }
+ }
+ MPI_Reduce(&local_min, &global_min, 1, MPI_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+ if (rank == 0) {
+ printf("Minimum number: %d\n", global_min);
+ }
+ MPI_Finalize();
+ return 0;
+}

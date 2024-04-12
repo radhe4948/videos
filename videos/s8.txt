@@ -1,0 +1,157 @@
+slip 8
+Q.1
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
+#define MAX_BLOCKS 100
+struct Block {
+ int block_number;
+ bool allocated;
+};
+void initializeDisk(struct Block disk[], int n) {
+ for (int i = 0; i < n; i++) {
+ disk[i].block_number = i;
+ disk[i].allocated = false;
+ }
+}
+void randomlyAllocate(struct Block disk[], int n) {
+ srand(time(NULL));
+ int num_allocated = rand() % (n / 2) + 1; // Randomly allocate up to half of 
+the blocks
+ for (int i = 0; i < num_allocated; i++) {
+ int block_index = rand() % n;
+ if (!disk[block_index].allocated) {
+ disk[block_index].allocated = true;
+ }
+ }
+}
+void showBitVector(struct Block disk[], int n) {
+ printf("\nBit Vector:\n");
+ for (int i = 0; i < n; i++) {
+ printf("%d ", disk[i].allocated);
+ }
+ printf("\n");
+}
+void createNewFile(struct Block disk[], int n) {
+ int start_block;
+ printf("Enter the starting block number for the new file: ");
+ scanf("%d", &start_block);
+ if (start_block < 0 || start_block >= n) {
+ printf("Invalid starting block number!\n");
+ return;
+ }
+ if (disk[start_block].allocated) {
+ printf("Block %d is already allocated!\n", start_block);
+ return;
+ }
+ int length;
+ printf("Enter the length of the file: ");
+ scanf("%d", &length);
+ if (start_block + length > n) {
+ printf("File cannot fit in the disk!\n");
+ return;
+ }
+ for (int i = start_block; i < start_block + length; i++) {
+ if (disk[i].allocated) {
+ printf("Block %d is already allocated!\n", i);
+ return;
+ }
+ }
+ for (int i = start_block; i < start_block + length; i++) {
+ disk[i].allocated = true;
+ }
+ printf("File created successfully!\n");
+}
+void showDirectory(struct Block disk[], int n) {
+ printf("\nDirectory:\n");
+ printf("Block\tAllocated\n");
+ for (int i = 0; i < n; i++) {
+ printf("%d\t%d\n", i, disk[i].allocated);
+ }
+}
+int main() {
+ struct Block disk[MAX_BLOCKS];
+ int n, choice;
+ printf("Enter the number of blocks in the disk: ");
+ scanf("%d", &n);
+ if (n <= 0 || n > MAX_BLOCKS) {
+ printf("Invalid number of blocks!\n");
+ return 1;
+ }
+ initializeDisk(disk, n);
+ randomlyAllocate(disk, n);
+ do {
+ printf("\nMenu:\n");
+ printf("1. Show Bit Vector\n");
+ printf("2. Create New File\n");
+ printf("3. Show Directory\n");
+ printf("4. Exit\n");
+ printf("Enter your choice: ");
+ scanf("%d", &choice);
+ switch (choice) {
+ case 1:
+ showBitVector(disk, n);
+ break;
+ case 2:
+ createNewFile(disk, n);
+ break;
+ case 3:
+ showDirectory(disk, n);
+ break;
+ case 4:
+ printf("Exiting...\n");
+ break;
+ default:
+ printf("Invalid choice! Please enter a number between 1 to 4.\n");
+ }
+ } while (choice != 4);
+ return 0;
+}
+Q.2
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+int absDiff(int a, int b) {
+ return abs(a - b);
+}
+void sstf(int *request_string, int n, int start_position) {
+ int total_head_movements = 0;
+ bool visited[n];
+ for (int i = 0; i < n; i++) {
+ visited[i] = false;
+ }
+ int current_position = start_position;
+ printf("Order of service: %d -> ", current_position);
+ for (int i = 0; i < n; i++) {
+ int min_distance = __INT_MAX__;
+ int next_request = -1;
+ for (int j = 0; j < n; j++) {
+ if (!visited[j]) {
+ int distance = absDiff(request_string[j], current_position);
+ if (distance < min_distance) {
+ min_distance = distance;
+ next_request = j;
+ }
+ }
+ }
+ visited[next_request] = true;
+ current_position = request_string[next_request];
+ total_head_movements += min_distance;
+ printf("%d -> ", current_position);
+ }
+ printf("\nTotal number of head movements: %d\n", total_head_movements);
+}
+int main() {
+ int request_string[] = {186, 89, 44, 70, 102, 22, 51, 124};
+ int n = sizeof(request_string) / sizeof(request_string[0]);
+ int start_position = 70;
+ printf("Disk Request String: ");
+ for (int i = 0; i < n; i++) {
+ printf("%d ", request_string[i]);
+ }
+ printf("\nStarting Head Position: %d\n", start_position);
+ printf("\nOrder of service:\n");
+ sstf(request_string, n, start_position);
+ return 0;
+}

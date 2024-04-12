@@ -1,0 +1,94 @@
+Slip 29
+Q.1
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <mpi.h>
+#define ARRAY_SIZE 1000
+int main(int argc, char *argv[]) {
+ int rank, size;
+ int numbers[ARRAY_SIZE];
+ int local_sum = 0;
+ int global_sum = 0;
+ MPI_Init(&argc, &argv);
+ MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+ MPI_Comm_size(MPI_COMM_WORLD, &size);
+ srand(time(NULL) + rank);
+ for (int i = 0; i < ARRAY_SIZE; i++) {
+ numbers[i] = rand() % 1000; // Generate random numbers between 0 and 999
+ }
+ for (int i = 0; i < ARRAY_SIZE; i++) {
+ if (numbers[i] % 2 == 0) {
+ local_sum += numbers[i];
+ }
+ }
+ MPI_Reduce(&local_sum, &global_sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+ if (rank == 0) {
+ printf("Sum of even numbers: %d\n", global_sum);
+ }
+ MPI_Finalize();
+ return 0;
+}
+Q.2 
+#include <stdio.h>
+#include <stdlib.h>
+void c_look(int *requests, int n, int start, int direction) {
+ int head = start;
+ int total_head_movement = 0;
+ for (int i = 0; i < n - 1; i++) {
+ for (int j = 0; j < n - i - 1; j++) {
+ if (requests[j] > requests[j + 1]) {
+ int temp = requests[j];
+ requests[j] = requests[j + 1];
+ requests[j + 1] = temp;
+ }
+ }
+ }
+position
+ int index;
+ for (index = 0; index < n; index++) {
+ if (requests[index] >= head) {
+ break;
+ }
+ }
+ printf("Order of requests served: ");
+ while (index < n) {
+ printf("%d ", requests[index]);
+ total_head_movement += abs(head - requests[index]);
+ head = requests[index];
+ index++;
+ }
+lowest request
+ if (direction == 1 && index != n) {
+ total_head_movement += abs(head - requests[0]);
+ head = requests[0];
+ printf("%d ", requests[0]);
+ }
+ if (direction == -1 && index != 0) {
+ index -= 1; 
+ while (index >= 0) {
+ printf("%d ", requests[index]);
+ total_head_movement += abs(head - requests[index]);
+ head = requests[index];
+ index--;
+ }
+ }
+ printf("\nTotal head movements: %d\n", total_head_movement);
+}
+int main() {
+ int n, start, direction;
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &n);
+ int *requests = (int *)malloc(n * sizeof(int));
+ printf("Enter the disk request string:\n");
+ for (int i = 0; i < n; i++) {
+ scanf("%d", &requests[i]);
+ }
+ printf("Enter the starting head position: ");
+ scanf("%d", &start);
+ printf("Enter the direction (1 for right, -1 for left): ");
+ scanf("%d", &direction);
+ c_look(requests, n, start, direction);
+ free(requests);
+ return 0;
+}

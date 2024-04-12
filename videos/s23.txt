@@ -1,0 +1,126 @@
+Slip 23
+Q.1 
+#include <stdio.h>
+#define MAX_PROCESSES 10
+#define MAX_RESOURCES 10
+void calculateNeedMatrix(int need[MAX_PROCESSES][MAX_RESOURCES], int 
+allocation[MAX_PROCESSES][MAX_RESOURCES],
+ int max[MAX_PROCESSES][MAX_RESOURCES], int m, int n) {
+ for (int i = 0; i < m; i++) {
+ for (int j = 0; j < n; j++) {
+ need[i][j] = max[i][j] - allocation[i][j];
+ }
+ }
+}
+int checkRequest(int request[MAX_RESOURCES], int available[MAX_RESOURCES], int 
+need[MAX_PROCESSES][MAX_RESOURCES],
+ int pid, int m) {
+ for (int i = 0; i < m; i++) {
+ if (request[i] > need[pid][i] || request[i] > available[i]) {
+ return 0;
+ }
+ }
+ return 1;
+}
+int main() {
+ int m, n; 
+ int allocation[MAX_PROCESSES][MAX_RESOURCES]; 
+ int max[MAX_PROCESSES][MAX_RESOURCES]; 
+ int available[MAX_RESOURCES]; 
+ int need[MAX_PROCESSES][MAX_RESOURCES];
+ printf("Enter number of processes: ");
+ scanf("%d", &m);
+ printf("Enter number of resource types: ");
+ scanf("%d", &n);
+ printf("Enter allocation matrix:\n");
+ for (int i = 0; i < m; i++) {
+ printf("Process %d: ", i);
+ for (int j = 0; j < n; j++) {
+ scanf("%d", &allocation[i][j]);
+ }
+ }
+ printf("Enter maximum requirement matrix:\n");
+ for (int i = 0; i < m; i++) {
+ printf("Process %d: ", i);
+ for (int j = 0; j < n; j++) {
+ scanf("%d", &max[i][j]);
+ }
+ }
+ printf("Enter available instances of each resource type: ");
+ for (int i = 0; i < n; i++) {
+ scanf("%d", &available[i]);
+ }
+ calculateNeedMatrix(need, allocation, max, m, n);
+ printf("Need Matrix:\n");
+ for (int i = 0; i < m; i++) {
+ printf("Process %d: ", i);
+ for (int j = 0; j < n; j++) {
+ printf("%d ", need[i][j]);
+ }
+ printf("\n");
+ }
+ int pid;
+ printf("Enter process ID for request: ");
+ scanf("%d", &pid);
+ int request[MAX_RESOURCES];
+ printf("Enter request for process %d: ", pid);
+ for (int i = 0; i < n; i++) {
+ scanf("%d", &request[i]);
+ }
+ if (checkRequest(request, available, need, pid, n)) {
+ printf("Request can be granted immediately.\n");
+ } else {
+ printf("Request cannot be granted immediately.\n");
+ }
+ return 0;
+}
+Q.2 
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+int findNearestTrack(int tracks[], int n, int head) {
+ int minDist = INT_MAX;
+ int index = -1;
+ 
+ for (int i = 0; i < n; i++) {
+ if (abs(tracks[i] - head) < minDist) {
+ minDist = abs(tracks[i] - head);
+ index = i;
+ }
+ }
+ 
+ return index;
+}
+int main() {
+ int n; 
+ int head; 
+ int totalHeadMovements = 0;
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &n);
+ printf("Enter the current head position: ");
+ scanf("%d", &head);
+ int *tracks = (int *)malloc(n * sizeof(int));
+ printf("Enter the disk request string:\n");
+ for (int i = 0; i < n; i++) {
+ scanf("%d", &tracks[i]);
+ }
+ int *processed = (int *)calloc(n, sizeof(int));
+ printf("Serving requests in SSTF order:\n");
+ for (int i = 0; i < n; i++) {
+ int nearestIndex = findNearestTrack(tracks, n, head);
+ if (nearestIndex == -1) {
+ break; 
+ }
+ 
+ printf("%d ", tracks[nearestIndex]);
+ processed[nearestIndex] = 1;
+ totalHeadMovements += abs(tracks[nearestIndex] - head);
+ head = tracks[nearestIndex];
+ tracks[nearestIndex] = INT_MAX; 
+ }
+ printf("\nTotal head movements: %d\n", totalHeadMovements);
+ free(tracks);
+ free(processed);
+ 
+ return 0;
+}

@@ -1,0 +1,96 @@
+Slip 10
+Q.1
+#include <stdio.h>
+#include <stdlib.h>
+#include <mpi.h>
+#define ARRAY_SIZE 1000
+int main(int argc, char *argv[]) {
+ int rank, size;
+ int array[ARRAY_SIZE];
+ int sum = 0;
+ double average;
+ MPI_Init(&argc, &argv);
+ MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+ MPI_Comm_size(MPI_COMM_WORLD, &size);
+ // Generate random numbers
+ srand(time(NULL) + rank);
+ for (int i = 0; i < ARRAY_SIZE; i++) {
+ array[i] = rand() % 1000; 
+ }
+ for (int i = 0; i < ARRAY_SIZE; i++) {
+ sum += array[i];
+ }
+ MPI_Reduce(&sum, &sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+ if (rank == 0) {
+ average = (double) sum / (ARRAY_SIZE * size);
+ printf("Sum: %d\n", sum);
+ printf("Average: %.2f\n", average);
+ }
+ MPI_Finalize();
+ return 0;
+}
+Q.2
+#include <stdio.h>
+#include <stdlib.h>
+void sort(int *request_string, int n) {
+ for (int i = 0; i < n-1; i++) {
+ for (int j = 0; j < n-i-1; j++) {
+ if (request_string[j] > request_string[j+1]) {
+ int temp = request_string[j];
+ request_string[j] = request_string[j+1];
+ request_string[j+1] = temp;
+ }
+ }
+ }
+}
+void cscan(int *request_string, int n, int start_position, char direction) {
+ int total_head_movements = 0;
+ int current_position = start_position;
+ sort(request_string, n);
+ printf("Order of service: ");
+ if (direction == 'L') {
+ total_head_movements += abs(end_position - current_position);
+ printf("%d -> ", end_position);
+ current_position = end_position;
+ total_head_movements += abs(current_position);
+ printf("0 -> ");
+ current_position = 0;
+ for (int i = 0; i < n; i++) {
+ if (request_string[i] <= start_position) {
+ total_head_movements += abs(request_string[i] - current_position);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ }
+ } else if (direction == 'R') {
+ total_head_movements += abs(current_position);
+ printf("%d -> ", current_position);
+ current_position = 0;
+ total_head_movements += abs(end_position - current_position);
+ printf("%d -> ", end_position);
+ current_position = end_position;
+ for (int i = n - 1; i >= 0; i--) {
+ if (request_string[i] >= start_position) {
+ total_head_movements += abs(request_string[i] - current_position);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ }
+ }
+ printf("\nTotal number of head movements: %d\n", total_head_movements);
+}
+int main() {
+ int request_string[] = {33, 99, 142, 52, 197, 79, 46, 65};
+ int n = sizeof(request_string) / sizeof(request_string[0]);
+ int start_position = 72;
+ char direction = 'L'; 
+ printf("Disk Request String: ");
+ for (int i = 0; i < n; i++) {
+ printf("%d ", request_string[i]);
+ }
+ printf("\nStarting Head Position: %d\n", start_position);
+ printf("Direction: %c\n", direction);
+ printf("\nOrder of service:\n");
+ cscan(request_string, n, start_position, direction);
+ return 0;
+}

@@ -1,0 +1,173 @@
+Slip 18
+Q.1
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <time.h>
+#define MAX_BLOCKS 100
+bool disk[MAX_BLOCKS];
+bool index_table[MAX_BLOCKS]; 
+int allocated_blocks = 0;
+void showBitVector(int n) {
+ printf("Bit Vector:\n");
+ for (int i = 0; i < n; i++) {
+ printf("%d ", disk[i]);
+ }
+ printf("\n");
+}
+void showDirectory(int n) {
+ printf("Directory:\n");
+ for (int i = 0; i < n; i++) {
+ if (index_table[i]) {
+ printf("Block %d: Allocated\n", i);
+ } else {
+ printf("Block %d: Free\n", i);
+ }
+ }
+}
+void createNewFile(int n) {
+ int index = rand() % n;
+ if (!disk[index]) {
+ disk[index] = true; 
+ index_table[allocated_blocks] = true; 
+ allocated_blocks++;
+ printf("New file created at block %d.\n", index);
+ } else {
+ printf("Block %d is already allocated.\n", index);
+ }
+}
+void deleteFile(int n) {
+ if (allocated_blocks == 0) {
+ printf("No files to delete.\n");
+ return;
+ }
+ int index = rand() % allocated_blocks;
+ for (int i = 0, j = 0; i < n; i++) {
+ if (index_table[i]) {
+ if (j == index) {
+ disk[i] = false; 
+ index_table[i] = false; 
+ allocated_blocks--;
+ printf("File deleted from block %d.\n", i);
+ return;
+ }
+ j++;
+ }
+ }
+}
+int main() {
+ srand(time(NULL));
+ int n;
+ printf("Enter the number of blocks on the disk: ");
+ scanf("%d", &n);
+ char choice;
+ do {
+ printf("\nMenu:\n");
+ printf("a) Show Bit Vector\n");
+ printf("b) Create New File\n");
+ printf("c) Show Directory\n");
+ printf("d) Delete File\n");
+ printf("e) Exit\n");
+ printf("Enter your choice: ");
+ scanf(" %c", &choice);
+ switch (choice) {
+ case 'a':
+ showBitVector(n);
+ break;
+ case 'b':
+ createNewFile(n);
+ break;
+ case 'c':
+ showDirectory(n);
+ break;
+ case 'd':
+ deleteFile(n);
+ break;
+ case 'e':
+ printf("Exiting...\n");
+ break;
+ default:
+ printf("Invalid choice! Please enter a valid option.\n");
+ }
+ } while (choice != 'e');
+ return 0;
+}
+Q.2 
+#include <stdio.h>
+#include <stdlib.h>
+void swap(int *a, int *b) {
+ int temp = *a;
+ *a = *b;
+ *b = temp;
+}
+void sort(int *request_string, int n) {
+ for (int i = 0; i < n - 1; i++) {
+ for (int j = 0; j < n - i - 1; j++) {
+ if (request_string[j] > request_string[j + 1]) {
+ swap(&request_string[j], &request_string[j + 1]);
+ }
+ }
+ }
+}
+void scan(int *request_string, int n, int start_position, char direction) {
+ int total_head_movements = 0;
+ sort(request_string, n);
+ int current_position = start_position;
+ if (direction == 'L') {
+ total_head_movements += current_position;
+ printf("%d -> ", current_position);
+ for (int i = n - 1; i >= 0; i--) {
+ if (request_string[i] <= current_position) {
+ total_head_movements += abs(request_string[i] - current_position);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ }
+ total_head_movements += (199 - current_position); 
+ printf("199 -> ");
+ current_position = 199;
+ for (int i = 0; i < n; i++) {
+ if (request_string[i] > current_position) {
+ total_head_movements += abs(request_string[i] - current_position);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ }
+ } else if (direction == 'R') { 
+ total_head_movements += (199 - current_position); 
+ printf("%d -> ", current_position);
+ for (int i = 0; i < n; i++) {
+ if (request_string[i] >= current_position) {
+ total_head_movements += abs(request_string[i] - current_position);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ }
+ total_head_movements += current_position;
+ printf("0 -> ");
+ current_position = 0;
+ for (int i = n - 1; i >= 0; i--) {
+ if (request_string[i] < current_position) {
+ total_head_movements += abs(request_string[i] - current_position);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ }
+ }
+ printf("\nTotal number of head movements: %d\n", total_head_movements);
+}
+int main() {
+ int request_string[] = {33, 99, 142, 52, 197, 79, 46, 65};
+ int n = sizeof(request_string) / sizeof(request_string[0]);
+ int start_position = 72;
+ char direction = 'R'; 
+ printf("Disk Request String: ");
+ for (int i = 0; i < n; i++) {
+ printf("%d ", request_string[i]);
+ }
+ printf("\nStarting Head Position: %d\n", start_position);
+ printf("Direction: %c\n", direction);
+ printf("\nOrder of service:\n");
+ scan(request_string, n, start_position, direction);
+ return 0;
+}

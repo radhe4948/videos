@@ -1,0 +1,163 @@
+Slip 13
+Q.1
+#include <stdio.h>
+#define MAX_PROCESSES 5
+#define MAX_RESOURCES 3
+int allocation[MAX_PROCESSES][MAX_RESOURCES] = {
+ {0, 1, 0},
+ {2, 0, 0},
+ {3, 0, 3},
+ {2, 1, 1},
+ {0, 0, 2}
+};
+int max[MAX_PROCESSES][MAX_RESOURCES] = {
+ {0, 0, 0},
+ {2, 0, 2},
+ {0, 0, 0},
+ {1, 0, 0},
+ {0, 0, 2}
+};
+int available[MAX_RESOURCES] = {0, 0, 0};
+int need[MAX_PROCESSES][MAX_RESOURCES];
+void calculateNeedMatrix() {
+ for (int i = 0; i < MAX_PROCESSES; i++) {
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ need[i][j] = max[i][j] - allocation[i][j];
+ }
+ }
+}
+int checkSafeState(int processes[], int n) {
+ int work[MAX_RESOURCES];
+ int finish[MAX_PROCESSES];
+ for (int i = 0; i < MAX_RESOURCES; i++) {
+ work[i] = available[i];
+ }
+ for (int i = 0; i < MAX_PROCESSES; i++) {
+ finish[i] = 0;
+ }
+ int count = 0;
+ int safe_sequence[MAX_PROCESSES];
+ while (count < n) {
+ int found = 0;
+ for (int i = 0; i < n; i++) {
+ if (finish[i] == 0) {
+ int j;
+ for (j = 0; j < MAX_RESOURCES; j++) {
+ if (need[processes[i]][j] > work[j]) {
+ break;
+ }
+ }
+ if (j == MAX_RESOURCES) {
+ for (int k = 0; k < MAX_RESOURCES; k++) {
+ work[k] += allocation[processes[i]][k];
+ }
+ safe_sequence[count++] = processes[i];
+ finish[i] = 1;
+ found = 1;
+ }
+ }
+ }
+ if (found == 0) {
+ printf("System is not in safe state.\n");
+ return 0;
+ }
+ }
+ printf("System is in safe state.\nSafe sequence: ");
+ for (int i = 0; i < n; i++) {
+ printf("P%d ", safe_sequence[i]);
+ }
+ printf("\n");
+ return 1;
+}
+int main() {
+ calculateNeedMatrix();
+ printf("Need Matrix:\n");
+ printf(" A B C\n");
+ for (int i = 0; i < MAX_PROCESSES; i++) {
+ printf("P%d ", i);
+ for (int j = 0; j < MAX_RESOURCES; j++) {
+ printf("%2d ", need[i][j]);
+ }
+ printf("\n");
+ }
+ printf("\n");
+ printf("Enter the available resources for A, B, and C: ");
+ scanf("%d %d %d", &available[0], &available[1], &available[2]);
+ int processes[MAX_PROCESSES] = {0, 1, 2, 3, 4};
+ checkSafeState(processes, MAX_PROCESSES);
+ return 0;
+}
+Q.2 
+#include <stdio.h>
+#include <stdlib.h>
+void swap(int *a, int *b) {
+ int temp = *a;
+ *a = *b;
+ *b = temp;
+}
+void sort(int *request_string, int n) {
+ for (int i = 0; i < n - 1; i++) {
+ for (int j = 0; j < n - i - 1; j++) {
+ if (request_string[j] > request_string[j + 1]) {
+ swap(&request_string[j], &request_string[j + 1]);
+ }
+ }
+ }
+}
+void scan(int *request_string, int n, int start_position, char direction) {
+ int total_head_movements = 0;
+ sort(request_string, n);
+ int current_position = start_position;
+ int i;
+ printf("Order of service: ");
+ if (direction == 'L') {
+ for (i = 0; i < n; i++) {
+ if (request_string[i] >= current_position) {
+ break;
+ }
+ }
+ for (; i >= 0; i--) {
+ total_head_movements += abs(current_position - request_string[i]);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ for (i = n - 1; i >= 0; i--) {
+ total_head_movements += abs(current_position - request_string[i]);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ }
+ else if (direction == 'R') {
+ for (i = 0; i < n; i++) {
+ if (request_string[i] > current_position) {
+ break;
+ }
+ }
+ for (; i < n; i++) {
+ total_head_movements += abs(current_position - request_string[i]);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ for (i = 0; i < n; i++) {
+ total_head_movements += abs(current_position - request_string[i]);
+ printf("%d -> ", request_string[i]);
+ current_position = request_string[i];
+ }
+ }
+ printf("\nTotal number of head movements: %d\n", total_head_movements);
+}
+int main() {
+ int request_string[] = {176, 79, 34, 60, 92, 11, 41, 114};
+ int n = sizeof(request_string) / sizeof(request_string[0]);
+ int start_position = 65;
+ char direction = 'L'; 
+ printf("Disk Request String: ");
+ for (int i = 0; i < n; i++) {
+ printf("%d ", request_string[i]);
+ }
+ printf("\nStarting Head Position: %d\n", start_position);
+ printf("Direction: %c\n", direction);
+ printf("\nOrder of service:\n");
+ scan(request_string, n, start_position, direction);
+ return 0;
+}

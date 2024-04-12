@@ -1,0 +1,99 @@
+Slip 27
+Q.1 
+#include <stdio.h>
+#include <stdlib.h>
+void sortArray(int arr[], int n) {
+ for (int i = 0; i < n - 1; i++) {
+ for (int j = 0; j < n - i - 1; j++) {
+ if (arr[j] > arr[j + 1]) {
+ int temp = arr[j];
+ arr[j] = arr[j + 1];
+ arr[j + 1] = temp;
+ }
+ }
+ }
+}
+int calculateHeadMovements(int diskRequests[], int numRequests, int startHeadPos, 
+int direction) {
+ int totalHeadMovements = 0;
+ int currentHeadPos = startHeadPos;
+ int lowerBound = 0, upperBound = 0;
+ sortArray(diskRequests, numRequests);
+ for (int i = 0; i < numRequests; i++) {
+ if (diskRequests[i] <= startHeadPos) {
+ lowerBound = i;
+ } else {
+ upperBound = i;
+ break;
+ }
+ }
+ for (int i = lowerBound; i >= 0; i--) {
+ totalHeadMovements += abs(currentHeadPos - diskRequests[i]);
+ currentHeadPos = diskRequests[i];
+ }
+ if (direction == 1) {
+ for (int i = upperBound; i < numRequests; i++) {
+ totalHeadMovements += abs(currentHeadPos - diskRequests[i]);
+ currentHeadPos = diskRequests[i];
+ }
+ }
+ return totalHeadMovements;
+}
+int main() {
+ int numBlocks, startHeadPos, direction;
+ printf("Enter the total number of disk blocks: ");
+ scanf("%d", &numBlocks);
+ int *diskRequests = (int *)malloc(numBlocks * sizeof(int));
+ if (diskRequests == NULL) {
+ printf("Memory allocation failed.\n");
+ return 1;
+ }
+ printf("Enter the disk request string (separated by spaces): ");
+ for (int i = 0; i < numBlocks; i++) {
+ scanf("%d", &diskRequests[i]);
+ }
+ printf("Enter the start head position: ");
+ scanf("%d", &startHeadPos);
+ printf("Enter the direction (0 for left, 1 for right): ");
+ scanf("%d", &direction);
+ int totalHeadMovements = calculateHeadMovements(diskRequests, numBlocks, 
+startHeadPos, direction);
+ printf("Order of disk requests served: ");
+ for (int i = 0; i < numBlocks; i++) {
+ printf("%d ", diskRequests[i]);
+ }
+ printf("\n");
+ printf("Total number of head movements: %d\n", totalHeadMovements);
+ free(diskRequests);
+ return 0;
+}
+Q.2
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <mpi.h>
+#define ARRAY_SIZE 1000
+int main(int argc, char *argv[]) {
+ int rank, size;
+ int numbers[ARRAY_SIZE];
+ int local_min = INT_MAX;
+ int global_min;
+ MPI_Init(&argc, &argv);
+ MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+ MPI_Comm_size(MPI_COMM_WORLD, &size);
+ srand(time(NULL) + rank);
+ for (int i = 0; i < ARRAY_SIZE; i++) {
+ numbers[i] = rand() % 1000; 
+ }
+ for (int i = 0; i < ARRAY_SIZE; i++) {
+ if (numbers[i] < local_min) {
+ local_min = numbers[i];
+ }
+ }
+ MPI_Reduce(&local_min, &global_min, 1, MPI_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+ if (rank == 0) {
+ printf("Minimum number: %d\n", global_min);
+ }
+ MPI_Finalize();
+ return 0;
+}
